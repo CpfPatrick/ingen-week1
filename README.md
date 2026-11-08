@@ -44,3 +44,9 @@ The MinIO Dockerfile builds a pinned official upstream source revision and inclu
 ## Scope
 
 Only the reviewed implementation, configuration, synthetic tests and build instructions are included. Internal documents, original requirements, private links, local acceptance logs, generated reports, caches and real environment files are excluded.
+
+## Documentation
+
+- [Development notes](docs/README.md)
+- [Verification and test scope](weekly/VERIFICATION.md)
+- [Assistant component placeholder](assistant/README.md)

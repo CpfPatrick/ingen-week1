@@ -1,0 +1,36 @@
+{
+  "pillow": "12.3.0",
+  "seed": 20261102,
+  "width": 1280,
+  "height": 720,
+  "synthetic_only": true,
+  "measurements": [
+    {
+      "quality": 75,
+      "jpeg_bytes": 554395,
+      "raw_rgb_bytes": 2764800,
+      "frames_per_second": 50,
+      "ten_robots_at_5fps_bytes_per_second": 27719750,
+      "configured_message_max_bytes": 1048588,
+      "remaining_before_record_overhead_bytes": 494193
+    },
+    {
+      "quality": 90,
+      "jpeg_bytes": 826496,
+      "raw_rgb_bytes": 2764800,
+      "frames_per_second": 50,
+      "ten_robots_at_5fps_bytes_per_second": 41324800,
+      "configured_message_max_bytes": 1048588,
+      "remaining_before_record_overhead_bytes": 222092
+    },
+    {
+      "quality": 95,
+      "jpeg_bytes": 1081237,
+      "raw_rgb_bytes": 2764800,
+      "frames_per_second": 50,
+      "ten_robots_at_5fps_bytes_per_second": 54061850,
+      "configured_message_max_bytes": 1048588,
+      "remaining_before_record_overhead_bytes": -32649
+    }
+  ]
+}
