@@ -1,0 +1,80 @@
+name: ingen-fleet-week1
+services:
+  kafka:
+    image: apache/kafka:3.9.0
+    ports: ["127.0.0.1:9092:9092"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:19092,EXTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_NUM_PARTITIONS: 6
+      KAFKA_MESSAGE_MAX_BYTES: 1048588
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:19092 --list >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+  topics:
+    image: apache/kafka:3.9.0
+    depends_on:
+      kafka: {condition: service_healthy}
+    entrypoint: /bin/bash
+    command: ["-ec", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic fleet.dev.heartbeat.v1 --partitions 6 --replication-factor 1 --config retention.ms=3600000"]
+  registry:
+    image: apicurio/apicurio-registry-mem:2.6.8.Final
+    ports: ["127.0.0.1:8081:8080"]
+  postgres:
+    image: postgres:16.8
+    environment:
+      POSTGRES_DB: fleet
+      POSTGRES_USER: fleet
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env first}
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fleet -d fleet"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  minio:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.minio
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set local MinIO user}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set local MinIO password}
+    ports: ["127.0.0.1:9000:9000", "127.0.0.1:9001:9001"]
+    # Week-1 uses synthetic data only. Raw transient data must not survive restart.
+    tmpfs: ["/data:size=268435456,mode=0700,uid=10001,gid=10001"]
+  gateway:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.gateway
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      SCHEMA_REGISTRY_URL: http://registry:8080
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      kafka: {condition: service_healthy}
+      registry: {condition: service_started}
+  inference-worker:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.worker
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+    depends_on:
+      topics: {condition: service_completed_successfully}
+volumes:
+  postgres-data:

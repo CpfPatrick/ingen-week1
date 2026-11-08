@@ -1,0 +1,27 @@
+[project]
+name = "ingen-fleet-workers"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = ["kafka-python==2.2.21"]
+
+[dependency-groups]
+dev = ["ruff==0.11.10", "mypy==1.15.0", "pytest==8.3.5", "pillow==12.3.0"]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+[[tool.mypy.overrides]]
+module = ["kafka", "kafka.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = [".", "inference-worker"]
+testpaths = ["tests"]

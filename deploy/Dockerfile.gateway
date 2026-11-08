@@ -1,0 +1,12 @@
+FROM gradle:8.12.1-jdk21 AS build
+WORKDIR /app
+COPY settings.gradle build.gradle ./
+COPY config/ ./config/
+COPY gateway/ ./gateway/
+COPY stream-processor/ ./stream-processor/
+RUN gradle --no-daemon :gateway:bootJar
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/gateway/build/libs/gateway-0.1.0-draft.jar app.jar
+USER 10001
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

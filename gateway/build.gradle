@@ -1,0 +1,33 @@
+plugins { id 'org.springframework.boot' }
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:3.4.5')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.apache.kafka:kafka-clients'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+sourceSets {
+    bootJarRegression {
+        java.srcDir 'src/bootJarRegression/java'
+    }
+}
+configurations {
+    bootJarRegressionImplementation.extendsFrom testImplementation
+    bootJarRegressionRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+def gatewayBootJar = tasks.named('bootJar')
+tasks.register('bootJarRegressionTest', Test) {
+    description = 'Launch the real packaged gateway with invalid configuration and verify safe logs.'
+    group = 'verification'
+    dependsOn gatewayBootJar
+    testClassesDirs = sourceSets.bootJarRegression.output.classesDirs
+    classpath = sourceSets.bootJarRegression.runtimeClasspath
+    inputs.file(gatewayBootJar.flatMap { it.archiveFile })
+    doFirst {
+        systemProperty 'gateway.bootJar', gatewayBootJar.get().archiveFile.get().asFile.absolutePath
+        systemProperty 'gateway.java', javaLauncher.get().executablePath.asFile.absolutePath
+    }
+}
+tasks.named('check') { dependsOn tasks.named('bootJarRegressionTest') }

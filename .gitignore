@@ -1,0 +1,12 @@
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+.venv/
+.gradle/
+**/build/
+**/__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

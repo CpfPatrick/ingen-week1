@@ -1,0 +1,2 @@
+rootProject.name = 'ingen-fleet-stream'
+include 'gateway', 'stream-processor'

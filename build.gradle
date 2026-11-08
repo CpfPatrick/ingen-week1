@@ -1,0 +1,26 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.5' apply false
+}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+    group = 'com.ingen.fleet'
+    version = '0.1.0-draft'
+    java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+    repositories { mavenCentral() }
+    dependencies {
+        testImplementation platform('org.junit:junit-bom:5.11.4')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        maxHeapSize = "192m"
+        maxParallelForks = 1
+    }
+    tasks.withType(Checkstyle).configureEach { maxHeapSize = "128m" }
+    checkstyle {
+        toolVersion = '10.21.4'
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+    }
+}
