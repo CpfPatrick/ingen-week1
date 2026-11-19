@@ -1,20 +1,59 @@
 plugins { id 'org.springframework.boot' }
+apply plugin: 'jacoco'
 dependencies {
     implementation platform('org.springframework.boot:spring-boot-dependencies:3.4.5')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.apache.kafka:kafka-clients'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.apache.avro:avro:1.12.0'
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+    implementation 'io.minio:minio:8.5.17'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
+    runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.6')
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:kafka'
+    testImplementation 'org.testcontainers:postgresql'
 }
 
 sourceSets {
+    main { resources { srcDir rootProject.file('schemas') } }
+    integrationTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
     bootJarRegression {
         java.srcDir 'src/bootJarRegression/java'
     }
 }
 configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
     bootJarRegressionImplementation.extendsFrom testImplementation
     bootJarRegressionRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Run real Kafka, Registry, MinIO and PostgreSQL acceptance tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter tasks.named('test')
+    maxHeapSize = '512m'
+    systemProperty 'api.version', '1.44'
+    testLogging { events 'passed', 'skipped', 'failed' }
+}
+jacoco { toolVersion = '0.8.12' }
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    dependsOn 'bootJarRegressionTest'
+    mustRunAfter tasks.named('integrationTest')
+    executionData fileTree(layout.buildDirectory).include('jacoco/*.exec')
+    reports { xml.required = true; html.required = true }
 }
 
 def gatewayBootJar = tasks.named('bootJar')

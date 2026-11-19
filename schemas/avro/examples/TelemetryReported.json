@@ -1,0 +1,17 @@
+{
+  "event_id": "f0f354b7-b153-430e-a4de-17de32c6cbb4",
+  "robot_id": "rover-01",
+  "platform": "AIDO_ROVER",
+  "captured_at": 1700000000000,
+  "received_at": 1700000000100,
+  "battery": 75.0,
+  "pose": {
+    "x": 1.0,
+    "y": 2.0,
+    "heading": 0.0
+  },
+  "speed": 0.5,
+  "network_quality": 0.8,
+  "operator_note": null,
+  "trace_id": null
+}

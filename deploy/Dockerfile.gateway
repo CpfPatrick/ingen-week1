@@ -2,6 +2,7 @@ FROM gradle:8.12.1-jdk21 AS build
 WORKDIR /app
 COPY settings.gradle build.gradle ./
 COPY config/ ./config/
+COPY schemas/ ./schemas/
 COPY gateway/ ./gateway/
 COPY stream-processor/ ./stream-processor/
 RUN gradle --no-daemon :gateway:bootJar

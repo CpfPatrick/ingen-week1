@@ -1,4 +1,4 @@
-name: Week-1 checks
+name: Week-2 checks
 on: [push, pull_request]
 permissions:
   contents: read
@@ -15,6 +15,20 @@ jobs:
         with:
           gradle-version: '8.12.1'
       - run: gradle --no-daemon build
+      - name: Build pinned MinIO server for real-container tests
+        run: docker build -f deploy/Dockerfile.minio -t ingen-minio:week2 .
+      - name: Test real ingestion services and report coverage
+        run: gradle --no-daemon :gateway:integrationTest :gateway:jacocoTestReport
+      - name: Build the deployable gateway image
+        run: docker build -f deploy/Dockerfile.gateway -t ingen-gateway:ci .
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gateway-test-evidence
+          path: |
+            gateway/build/test-results/
+            gateway/build/reports/tests/
+            gateway/build/reports/jacoco/
   python:
     runs-on: ubuntu-latest
     steps:
