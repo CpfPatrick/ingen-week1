@@ -1,0 +1,19 @@
+{
+  "event_id": "8daa61d7-9035-4ca5-9b2d-dc4c0cba589e",
+  "frame_event_id": "9e3daf2d-0162-4daf-89b8-eb3a7712d601",
+  "model_name": "detector",
+  "model_version": "example-v1",
+  "detections": [
+    {
+      "class_label": "obstacle",
+      "confidence": 0.9,
+      "x": 0.1,
+      "y": 0.2,
+      "w": 0.3,
+      "h": 0.4,
+      "inference_ms": 25.0
+    }
+  ],
+  "robot_id": null,
+  "trace_id": null
+}

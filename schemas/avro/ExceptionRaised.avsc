@@ -1,0 +1,63 @@
+{
+  "type": "record",
+  "name": "ExceptionRaised",
+  "namespace": "com.ingen.fleet.events",
+  "doc": "Week 2 event contract. Semantic constraints are validated by producing applications; Avro validates structure and types.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Stable UUID identifying this exception."
+    },
+    {
+      "name": "stage",
+      "type": "string",
+      "doc": "Component/stage that rejected or failed processing."
+    },
+    {
+      "name": "error_code",
+      "type": "string",
+      "doc": "Stable machine-readable failure classification."
+    },
+    {
+      "name": "message",
+      "type": "string",
+      "doc": "Safe diagnostic; no raw payload, credentials or stack traces."
+    },
+    {
+      "name": "original_event_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Event that failed; null only if failure happened before an event was assigned.",
+      "default": null
+    },
+    {
+      "name": "trace_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Trace correlation; null only if unavailable.",
+      "default": null
+    },
+    {
+      "name": "robot_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Robot for partitioning when known.",
+      "default": null
+    },
+    {
+      "name": "occurred_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "UTC epoch milliseconds when failure was observed."
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "type": "record",
+  "name": "TelemetryReported",
+  "namespace": "com.ingen.fleet.events",
+  "doc": "Week 2 event contract. Semantic constraints are validated by producing applications; Avro validates structure and types.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Stable UUID identifying this event."
+    },
+    {
+      "name": "robot_id",
+      "type": "string",
+      "doc": "Robot identifier; Kafka record key must equal this value."
+    },
+    {
+      "name": "platform",
+      "type": "string",
+      "doc": "Platform discriminator, e.g. AIDO_ROVER; extensible string, not a closed enum."
+    },
+    {
+      "name": "captured_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Capture time as UTC epoch milliseconds; client must submit a timezone-aware timestamp."
+    },
+    {
+      "name": "received_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Gateway acceptance time as UTC epoch milliseconds."
+    },
+    {
+      "name": "battery",
+      "type": "double",
+      "doc": "Battery percentage in [0,100]."
+    },
+    {
+      "name": "pose",
+      "type": {
+        "type": "record",
+        "name": "Pose",
+        "fields": [
+          {
+            "name": "x",
+            "type": "double",
+            "doc": "Position in metres in the robot local map coordinate frame."
+          },
+          {
+            "name": "y",
+            "type": "double",
+            "doc": "Position in metres in the robot local map coordinate frame."
+          },
+          {
+            "name": "heading",
+            "type": "double",
+            "doc": "Yaw in radians about the map up-axis, counter-clockwise positive."
+          }
+        ]
+      },
+      "doc": "Local-map planar pose; the map origin must be configured consistently for a robot; not GPS."
+    },
+    {
+      "name": "speed",
+      "type": "double",
+      "doc": "Non-negative ground-speed magnitude in metres/second."
+    },
+    {
+      "name": "network_quality",
+      "type": "double",
+      "doc": "Dimensionless link-quality fraction in [0,1], higher is better."
+    },
+    {
+      "name": "operator_note",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Optional operator text. May contain PII; treat as raw transient data and redact before downstream persistence.",
+      "default": null
+    },
+    {
+      "name": "trace_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Correlation identifier; null denotes a legacy producer without tracing.",
+      "default": null
+    }
+  ]
+}

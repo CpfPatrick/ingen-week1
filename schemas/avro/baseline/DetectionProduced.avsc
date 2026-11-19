@@ -1,0 +1,94 @@
+{
+  "type": "record",
+  "name": "DetectionProduced",
+  "namespace": "com.ingen.fleet.events",
+  "doc": "Week 2 event contract. Semantic constraints are validated by producing applications; Avro validates structure and types.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Stable UUID identifying this detection event."
+    },
+    {
+      "name": "frame_event_id",
+      "type": "string",
+      "doc": "FrameSubmitted.event_id that was processed."
+    },
+    {
+      "name": "model_name",
+      "type": "string",
+      "doc": "Detector model identity."
+    },
+    {
+      "name": "model_version",
+      "type": "string",
+      "doc": "Immutable model artifact version."
+    },
+    {
+      "name": "detections",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "Detection",
+          "fields": [
+            {
+              "name": "class_label",
+              "type": "string",
+              "doc": "Normalised class label; mapping is owned by the inference worker."
+            },
+            {
+              "name": "confidence",
+              "type": "double",
+              "doc": "Confidence in [0,1]."
+            },
+            {
+              "name": "x",
+              "type": "double",
+              "doc": "Left edge / image width, in [0,1]."
+            },
+            {
+              "name": "y",
+              "type": "double",
+              "doc": "Top edge / image height, in [0,1]."
+            },
+            {
+              "name": "w",
+              "type": "double",
+              "doc": "Box width / image width, in [0,1]; x+w <= 1."
+            },
+            {
+              "name": "h",
+              "type": "double",
+              "doc": "Box height / image height, in [0,1]; y+h <= 1."
+            },
+            {
+              "name": "inference_ms",
+              "type": "double",
+              "doc": "Non-negative elapsed model inference time in milliseconds for the frame; repeated on each detection from that inference. Not wall-clock time."
+            }
+          ]
+        }
+      },
+      "doc": "Possibly empty detections; origin is top-left, x rightwards and y downwards."
+    },
+    {
+      "name": "robot_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Source robot when known; join via frame_event_id for a legacy producer.",
+      "default": null
+    },
+    {
+      "name": "trace_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Correlation identifier; null denotes a legacy producer without tracing.",
+      "default": null
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "event_id": "4cc31d1b-f74e-4598-b8ef-49507c560a4c",
+  "stage": "inference",
+  "error_code": "FRAME_FETCH_FAILED",
+  "message": "Frame object is unavailable",
+  "original_event_id": null,
+  "trace_id": null,
+  "robot_id": null,
+  "occurred_at": 1700000000200
+}

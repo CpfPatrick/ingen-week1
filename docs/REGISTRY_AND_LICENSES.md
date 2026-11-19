@@ -2,8 +2,13 @@
 
 The development stack selects Apicurio Registry 2.6.8.Final. Its tagged source uses
 [Apache License 2.0](https://github.com/Apicurio/apicurio-registry/blob/2.6.8.Final/LICENSE).
-The configured in-memory registry loses artifacts on restart; durable schema storage
-and cross-language compatibility tests remain future implementation work.
+Week 2 uses the SQL registry image with its own PostgreSQL `registry` database.
+Schema IDs, Kafka logs, the gateway journal and MinIO objects use named development
+volumes so ordinary restarts do not invalidate retained event references.
+The registry initializes its own SQL tables; it does not read the gateway journal.
+The database init script runs only for a new PostgreSQL volume. When upgrading an
+existing volume, create the `registry` database explicitly before starting this image.
+Deleting development volumes is a coordinated reset, not a production backup strategy.
 
 Kafka uses Apache License 2.0. PostgreSQL uses the PostgreSQL License. MinIO server
 uses AGPL-3.0-or-later; review the upstream license and applicable obligations before

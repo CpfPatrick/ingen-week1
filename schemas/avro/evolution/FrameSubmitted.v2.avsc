@@ -1,0 +1,87 @@
+{
+  "type": "record",
+  "name": "FrameSubmitted",
+  "namespace": "com.ingen.fleet.events",
+  "doc": "Week 2 event contract. Semantic constraints are validated by producing applications; Avro validates structure and types.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Stable UUID identifying this event."
+    },
+    {
+      "name": "robot_id",
+      "type": "string",
+      "doc": "Robot identifier; Kafka record key must equal this value."
+    },
+    {
+      "name": "platform",
+      "type": "string",
+      "doc": "Platform discriminator, e.g. AIDO_ROVER; extensible string, not a closed enum."
+    },
+    {
+      "name": "captured_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Capture time as UTC epoch milliseconds; client must submit a timezone-aware timestamp."
+    },
+    {
+      "name": "received_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Gateway acceptance time as UTC epoch milliseconds."
+    },
+    {
+      "name": "width",
+      "type": "int",
+      "doc": "Decoded image width in pixels, strictly positive."
+    },
+    {
+      "name": "height",
+      "type": "int",
+      "doc": "Decoded image height in pixels, strictly positive."
+    },
+    {
+      "name": "format",
+      "type": "string",
+      "doc": "Decoded image format: JPEG or PNG."
+    },
+    {
+      "name": "size_bytes",
+      "type": "long",
+      "doc": "Exact uploaded encoded image byte length, strictly positive."
+    },
+    {
+      "name": "sha256",
+      "type": "string",
+      "doc": "Lowercase hexadecimal SHA-256 of the exact stored bytes."
+    },
+    {
+      "name": "object_key",
+      "type": "string",
+      "doc": "Content-addressed object key in the configured frame bucket; never a signed URL or credentials."
+    },
+    {
+      "name": "trace_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Correlation identifier; null denotes a legacy producer without tracing.",
+      "default": null
+    },
+    {
+      "name": "camera_id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "doc": "Optional source camera identifier; added in v2 with null default.",
+      "default": null
+    }
+  ]
+}

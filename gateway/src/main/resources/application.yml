@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   main:
     banner-mode: "off"
   output:
@@ -9,6 +13,24 @@ server:
 fleet:
   kafka: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
   registry: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+  ingestion:
+    enabled: ${INGESTION_ENABLED:false}
+    max-image-bytes: 5242880
+    max-pixels: 16777216
+    max-dimension: 8192
+    rate-per-second: 10
+    rate-burst: 20
+    max-rate-robots: 10000
+    jdbc-url: ${INGESTION_JDBC_URL:jdbc:postgresql://localhost:5432/fleet}
+    username: ${INGESTION_DB_USER:fleet}
+    password: ${POSTGRES_PASSWORD:}
+    minio-url: ${MINIO_URL:http://localhost:9000}
+    access-key: ${MINIO_ROOT_USER:}
+    secret-key: ${MINIO_ROOT_PASSWORD:}
+    bucket: frames
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
 management:
   endpoints:
     web:

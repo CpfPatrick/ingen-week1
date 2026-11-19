@@ -1,0 +1,40 @@
+{
+  "experiment": "consumed-frame-submitted-avro-wire-size",
+  "measurement": {
+    "fixture": "generated-24x16-jpeg",
+    "avro_wire_bytes": 288,
+    "includes_five_byte_schema_prefix": true,
+    "schema_id": 1,
+    "image_bytes": 819
+  },
+  "source_test": {
+    "class": "com.ingen.fleet.ingestion.GatewayIntegrationTest",
+    "method": "validFrameStoresExactImageAndPublishesOneRegisteredAvroEvent()",
+    "result": "passed",
+    "suite_tests": 17,
+    "suite_failures": 0,
+    "suite_errors": 0,
+    "suite_skipped": 0,
+    "xml_timestamp": "2026-11-19T02:20:20",
+    "xml_path": "gateway/build/test-results/integrationTest/TEST-com.ingen.fleet.ingestion.GatewayIntegrationTest.xml",
+    "xml_sha256": "9ac8f7f97c018f4f13439a71434348104521f6e7a1269bcfc4eeded12dd556ab",
+    "test_source_path": "gateway/src/integrationTest/java/com/ingen/fleet/ingestion/GatewayIntegrationTest.java",
+    "test_source_sha256": "d947dcaaf6f388d5560e7df8b4582d2dab46f84e75c2c650a423b9857cb67965"
+  },
+  "observation": "Value length of FrameSubmitted consumed from real Kafka after HTTP submission and MinIO storage; decoded using the registered writer schema.",
+  "fixture_scope": "Synthetic 24x16 JPEG whose bytes vary with the test robot UUID; this is not one of the six natural photographs.",
+  "included": "Kafka record value: five-byte Confluent-compatible prefix plus binary Avro record.",
+  "excluded": [
+    "Kafka record key",
+    "trace header",
+    "record and batch framing",
+    "request framing",
+    "replication",
+    "object upload or download traffic"
+  ],
+  "active_metadata_producer_max_request_size_bytes": 65536,
+  "illustrative_50_same_sized_events_per_second_value_bytes": 14400,
+  "arithmetic_is_not_measured_throughput": true,
+  "raw_marker": "W02_PAYLOAD_MEASUREMENT {\"fixture\":\"generated-24x16-jpeg\",\"avro_wire_bytes\":288,\"includes_five_byte_schema_prefix\":true,\"schema_id\":1,\"image_bytes\":819}",
+  "reproduction": "Run the actual gateway Testcontainers integration suite; inspect W02_PAYLOAD_MEASUREMENT in the XML. Exact image bytes can differ between runs; use the marker from the passing run being reported."
+}
