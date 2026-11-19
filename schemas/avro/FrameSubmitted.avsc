@@ -37,7 +37,7 @@
     },
     {
       "name": "width",
-      "type": "int",
+      "type": "string",
       "doc": "Decoded image width in pixels, strictly positive."
     },
     {
