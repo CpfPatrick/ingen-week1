@@ -18,15 +18,36 @@ reported as a passing result.
 | Java build and configured Checkstyle | Passed in the recorded build | Delivery evidence `build.log`; root Gradle `build` includes the packaged-gateway regression |
 | Python lockfile, Ruff, strict mypy and pytest | **38 pytest cases passed**; lint/type checks passed | Recorded delivery verification; these are existing worker/scaffold checks, not Week 3 inference acceptance |
 | Real-service HTTP/Kafka integration | **17 passed**, 0 failures/errors/skips | `gateway/build/test-results/integrationTest/TEST-com.ingen.fleet.ingestion.GatewayIntegrationTest.xml` and integration console output |
-| Gateway coverage | **Pending final JaCoCo report** | `gateway/build/reports/jacoco/test/jacocoTestReport.xml` and `html/index.html` |
-| Docker Compose and verbatim documented curl commands | **Pending recorded execution** | To be linked to the delivery's Compose/API evidence |
-| Remote passing CI and intentionally incompatible branch | **Pending remote evidence** | To be replaced by exact GitHub run URLs and commit SHAs |
+| Gateway coverage | **90.41% lines** (556/615); **72.06% branches** (245/340) | `gateway/build/reports/jacoco/test/jacocoTestReport.xml` and `html/index.html` |
+| Docker Compose and verbatim documented curl commands | **Passed**, walkthrough script exited 0 | Delivery evidence `contracts-walkthrough.sh` and `contracts-walkthrough.log`; environment scope below |
+| Remote implementation CI | **Passed**: Java, Python, all 17 real integration cases, coverage generation and standard gateway Docker image build | [Run 44443913744](https://github.com/CpfPatrick/ingen-week1/actions/runs/44443913744), commit `16de089a8c461c845d1d0b37ec76d57a4719c826` |
+| Intentionally incompatible branch CI | **Failed as required**, with the schema-baseline gate explicitly failing | [Run 44443964468](https://github.com/CpfPatrick/ingen-week1/actions/runs/44443964468), commit `a37d92802f48c5d101ffa0a31cc2657d04f6426c` |
 
 The 55 gateway tests include 14 contract/codec/registry tests, 12 request
 validation tests, 2 limiter tests, and 27 existing health/logging/trace tests.
 The separate startup regression launches the packaged application; it is not
 included in the 55. No minimum coverage percentage or arbitrary test-count
 threshold is used as a substitute for the required behaviors.
+
+All four Java suites total **74 passing tests**, with no failures, errors or
+skips. `gateway/build/reports/integration/summary.json` records the suite counts,
+payload measurement and coverage counters. The actual integration execution is
+preserved in delivery evidence `integration.log`; the successful final report
+generation/build completion is in `integration-final.log`. The final report
+invocation reused the already-passing integration task as up-to-date; it is
+not counted as a second execution of the 17 cases.
+
+| Gateway coverage counter | Covered / total | Percentage |
+| --- | ---: | ---: |
+| Lines | 556 / 615 | 90.41% |
+| Branches | 245 / 340 | 72.06% |
+| Instructions | 3,165 / 3,565 | 88.78% |
+| Methods | 108 / 120 | 90.00% |
+| Classes | 32 / 32 | 100.00% |
+
+These counters cover the gateway's existing and new production classes, not
+only the new controller. Uncovered branches remain; 100% class coverage means
+each class was exercised, not that every branch or failure mode was proved.
 
 ## Real-service test configuration
 
@@ -82,14 +103,36 @@ The local schema gate separately checks each candidate against the committed
 v1 baseline. Its unit tests prove both new-reader/old-data BACKWARD behavior and
 old-reader/new-data behavior for the optional-defaulted v2 field. These two
 directions are deliberately distinguished. A mandatory new field without a
-default must fail the baseline gate; remote negative-branch evidence remains
+default must fail the baseline gate. The remote negative-branch check below is
 separate from a unit test that expects an incompatibility result.
 
-The implementation uses Apache Avro `GenericRecord` and explicit schemas rather
-than a Gradle code-generation plugin. This is intentional: generic encoding and
-reader/writer resolution make the wire contract and schema-ID handling directly
-testable. Generated model classes are not required for those interoperability
-guarantees. This is a tooling choice, not a claim that code generation ran.
+## Remote schema-rejection proof
+
+Branch `codex/week2-incompatible-schema-proof`, commit
+`a37d92802f48c5d101ffa0a31cc2657d04f6426c`, changes only the candidate
+`FrameSubmitted.width` type from `int` to `string`; the committed baseline is
+unchanged. [GitHub Actions run 44443964468](https://github.com/CpfPatrick/ingen-week1/actions/runs/44443964468)
+completed with conclusion **failure**. Its Java log explicitly reports
+`SchemaCompatibilityTest.publishedBaselineMustRemainReadableByCurrentSchemas`
+as failed, followed by failed `:gateway:test` and `BUILD FAILED`. The optional
+evolution compatibility test and three codec tests also failed against the
+broken candidate. The Python job passed.
+
+This is evidence that the attempted incompatible schema change fails the real
+remote build, not merely that a compatibility-check function returns false.
+The deliberately broken branch is separate from the implementation branch.
+The implementation run at commit `16de089a8c461c845d1d0b37ec76d57a4719c826`
+completed successfully in both Java and Python jobs. Its logs show all 17
+integration cases passing and the standard gateway image building successfully.
+The [uploaded test artifact](https://github.com/CpfPatrick/ingen-week1/actions/runs/44443913744/artifacts/14492617810)
+contains the JUnit, test HTML and coverage evidence. Subsequent report-only
+updates document this verified implementation without changing its code.
+
+The implementation loads explicit schemas into Apache Avro `GenericRecord` at
+runtime. Generic encoding and reader/writer resolution make the wire contract
+and schema-ID handling directly testable. No Gradle code-generation task is
+configured, so generated model classes are not part of the validated build.
+This is the recorded tooling choice for the Week 2 implementation.
 
 ## Measured payload evidence
 
@@ -107,6 +150,39 @@ The separate [natural-image payload experiment](NATURAL_PAYLOAD_EXPERIMENT.md)
 addresses the Week 1 image-size feedback using licensed natural images and
 documented encoding settings. Its measurement JSON is separate from this
 gateway wire measurement; neither is a production robot benchmark.
+
+## Documented client walkthrough
+
+The first eight Bash blocks in `W02_Event_Contracts.md` were extracted verbatim
+into `contracts-walkthrough.sh` and executed in one shell. All curl commands
+were unchanged. The run used the documented `GATEWAY_PORT=18080` and
+`REGISTRY_PORT=18081` overrides because the cloud environment's default ports
+were occupied. It reached gateway readiness `UP`, accepted a new frame with
+HTTP **201**, returned HTTP **200** and the same event/object for its duplicate,
+queried that frame's status, submitted telemetry, and read the live
+`FrameSubmitted-value` BACKWARD configuration and registered schema.
+
+This walkthrough used a session-specific Compose override selecting already
+built images, with image builds disabled in that override. The gateway image
+ran the actual locally built boot JAR. Fresh acceptance services included
+PostgreSQL with its separate registry database, SQL Registry, Kafka topics,
+MinIO, the gateway and the existing worker. This proves the documented client
+commands against the assembled stack; it does not independently prove the
+standard multi-stage gateway Dockerfile on a clean host. That separate build
+was verified successfully by the standard Dockerfile step in remote run
+[44443913744](https://github.com/CpfPatrick/ingen-week1/actions/runs/44443913744).
+
+HTTP duplicate identity is supplementary evidence. The integration suite's
+actual Kafka consumption establishes the one-event count for ordinary and
+concurrent duplicates; equal HTTP IDs alone would not establish that count.
+
+An additional Compose check restarted the gateway, waited for readiness, read
+the existing status from PostgreSQL, and repeated the same frame. It returned
+HTTP 200 and the identical original response. All six frame-topic end offsets
+were unchanged (one acknowledged record in total), so this repeat added no
+Kafka event. Delivery evidence `gateway-restart.json` records both offset sets.
+This is an ordinary restart check, not a crash injected between Kafka ACK and
+the journal commit.
 
 ## Reproduction and report scope
 
@@ -149,6 +225,6 @@ baseline or intentionally failing compatibility branch.
 - Real inference, detection-quality evaluation, enrichment, privacy processing,
   query APIs, multi-robot performance targets and broker-failure chaos are later
   stages. Passing Week 2 tests does not establish those results.
-- The documented curl workflow must be executed separately; a MockMvc or
-  Testcontainers result alone does not prove that a fresh client can run every
-  published command verbatim.
+- The curl workflow passed with the documented alternate ports and prebuilt
+  images described above. A fresh-host standard image build is a separate CI
+  check, not an implied consequence of the walkthrough passing.

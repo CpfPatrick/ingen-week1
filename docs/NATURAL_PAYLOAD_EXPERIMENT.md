@@ -120,10 +120,36 @@ The decision is to store the image once in MinIO and put identity, metadata,
 checksum and object key in the Kafka event. This avoids carrying each image
 through every Kafka replica/consumer path and separates object lifetime from
 event retention. It adds object-fetch latency, a MinIO dependency and orphan
-cleanup/lifetime coordination. A reference event's actual encoded size must be
-measured from its implemented Avro contract; this experiment does **not** invent a
-measured metadata size. HTTP upload limits are a separate gateway policy, not
-derived from this six-image maximum.
+cleanup/lifetime coordination. The implemented contract's separately measured
+reference size is reported below. HTTP upload limits are a separate gateway
+policy, not derived from this six-image maximum.
+
+## Measured Week 2 reference event
+
+The passing real-container test
+`GatewayIntegrationTest.validFrameStoresExactImageAndPublishesOneRegisteredAvroEvent`
+consumed a **288-byte `FrameSubmitted` value** from Kafka after HTTP ingestion and
+MinIO storage. That value includes the five-byte Confluent-compatible schema-ID
+prefix and binary Avro body. It excludes the Kafka key, trace header, record and
+batch framing, request framing and replication. The
+[captured marker and provenance](natural-payload-avro-measurement.json) identify
+the source test, XML checksum and passing run (17 tests, zero failures/errors).
+
+This measurement uses a **separate synthetic 24 × 16 JPEG of 819 bytes**, not one
+of the six natural photographs above. The fixture is seeded by the generated test
+robot UUID, so its JPEG byte count can vary between runs. The exact marker from
+the passing run is retained; an earlier run's size is not silently substituted.
+Its metadata includes the canonical platform, UUID identities, UTC capture and
+receipt timestamps, dimensions, image size, SHA-256, object key and trace ID.
+
+Fifty events of that measured value size would be **14,400 value bytes/s**, an
+arithmetic comparison only. Natural-image events can have different metadata
+lengths and Avro integer encodings, so 288 bytes is not asserted to be their exact
+size, a maximum contract size or measured network throughput. The active 64 KiB
+producer limit applies to the request including overhead, not just this value.
+The image bytes still traverse the object-store path; claim-check does not remove
+that traffic. Reproduction uses the actual integration suite documented in
+[the Week 2 test report](W02_Test_Report.md), not the photograph-encoding script.
 
 The remaining validation need is native-resolution, consented or open-licensed
 outdoor camera footage with darkness, clutter, motion blur and varying encoder
